@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream Weaver AI</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter for a clean look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <!-- React and Babel for running React in the browser -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* Custom styles to complement Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a092d;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0);
+            background-size: 20px 20px;
+        }
+        .title-font {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom scrollbar for a better look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1b4b; /* indigo-950 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5; /* indigo-600 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1; /* indigo-500 */
+        }
+        /* Loading spinner animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #a5b4fc; /* indigo-300 */
+            animation: spin 1s linear infinite;
+        }
+        /* Simple fade-in animation for results */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        // --- UI Components (Defined outside the main App component to prevent re-creation on re-render) ---
+       
+        const Header = () => (
+            <div className="text-center p-6 border-b border-indigo-900/50">
+                <h1 className="text-4xl md:text-5xl font-bold text-white title-font">Dream Weaver <span className="text-indigo-400">AI</span></h1>
+                <p className="text-indigo-300 mt-2 text-sm md:text-base">Unlock the secrets of your subconscious with ancient wisdom.</p>
+            </div>
+        );
+
+        const Form = ({ dream, setDream, belief, setBelief, handleSubmit, isLoading }) => (
+            <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                    <label htmlFor="dream-input" className="block text-sm font-medium text-indigo-300 mb-2">
+                        Describe your dream
+                    </label>
+                    <textarea
+                        id="dream-input"
+                        rows="6"
+                        className="w-full bg-indigo-950/50 border border-indigo-700 rounded-lg p-4 text-white placeholder-indigo-400/70 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                        placeholder="I dreamt I was flying over a city of clouds..."
+                        value={dream}
+                        onChange={(e) => setDream(e.target.value)}
+                    />
+                </div>
+                <div>
+                    <label htmlFor="belief-system" className="block text-sm font-medium text-indigo-300 mb-2">
+                        Choose an interpretive lens
+                    </label>
+                    <select
+                        id="belief-system"
+                        className="w-full bg-indigo-950/50 border border-indigo-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                        value={belief}
+                        onChange={(e) => setBelief(e.target.value)}
+                    >
+                        <option>Ancient Egyptian</option>
+                        <option>Ancient Greek</option>
+                        <option>Ancient Vedas</option>
+                        <option>Jungian Archetypes</option>
+                        <option>Norse Mythology</option>
+                    </select>
+                </div>
+                <div>
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        id="submitButton"
+                        className="w-full flex justify-center items-center bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105"
+                    >
+                        {isLoading ? (
+                            <>
+                                <div className="loader w-5 h-5 rounded-full mr-3"></div>
+                                Interpreting...
+                            </>
+                        ) : 'Weave My Dream'}
+                    </button>
+                </div>
+            </form>
+        );
+
+        const ResultDisplay = ({ error, interpretation }) => (
+            <div className="mt-8">
+                {error && (
+                    <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg animate-fade-in">
+                        <h3 className="font-bold">An Error Occurred</h3>
+                        <p>{error}</p>
+                    </div>
+                )}
+                {interpretation && (
+                    <div className="bg-indigo-950/20 border border-indigo-800 p-6 rounded-lg shadow-2xl animate-fade-in">
+                        <h2 className="text-2xl font-bold text-indigo-300 title-font mb-4">The Tapestry of Your Dream</h2>
+                        {/* Using pre-wrap to preserve formatting from the AI's response */}
+                        <p className="text-indigo-200 whitespace-pre-wrap leading-relaxed">{interpretation}</p>
+                    </div>
+                )}
+                 {/* Disclaimer */}
+                <p className="text-center text-xs text-indigo-400/60 mt-8 px-4">
+                    Disclaimer: This AI-powered interpretation is for entertainment purposes only and is not a substitute for professional psychological advice.
+                </p>
+            </div>
+        );
+
+        // The main React application component
+        const App = () => {
+            // State management using React Hooks
+            const [dream, setDream] = React.useState('');
+            const [belief, setBelief] = React.useState('Ancient Egyptian');
+            const [interpretation, setInterpretation] = React.useState('');
+            const [isLoading, setIsLoading] = React.useState(false);
+            const [error, setError] = React.useState(null);
+
+            // --- Backend Logic (Simulated in Frontend for this MVP) ---
+            const getInterpretation = async () => {
+                if (!dream.trim()) {
+                    setError('Please enter a dream to interpret.');
+                    return;
+                }
+
+                setIsLoading(true);
+                setError(null);
+                setInterpretation('');
+
+                const prompts = {
+                    'Ancient Egyptian': 'You are an expert on ancient Egyptian dream symbolism. Interpret the following dream based on omens related to gods, the afterlife, and daily life along the Nile. Explain the meaning in clear, modern, and relatable English.',
+                    'Ancient Greek': 'You are an expert on the dream interpretations of Artemidorus. Analyze this dream as a premonition or reflection of the dreamer\'s fate, using classical Greek symbols. Explain the meaning in clear, modern, and relatable English.',
+                    'Jungian Archetypes': 'You are a Jungian analyst. Interpret this dream by identifying archetypes (e.g., the Shadow, Anima/Animus) and symbols from the collective unconscious. Explain their relevance to the dreamer\'s personal growth in clear, modern, and relatable English.',
+                    'Norse Mythology': 'You are an expert on Norse mythology. Interpret this dream through the lens of the Nine Realms and the sagas, focusing on symbols of honor, fate (Wyrd), and destiny. Explain the meaning in clear, modern, and relatable English.',
+                    'Ancient Vedas': 'You are an expert on the teachings of the Vedas and Upanishads. Interpret this dream based on concepts like karma, dharma, and the nature of the self (Atman). Explain its connection to the dreamer\'s spiritual journey in clear, modern, and relatable English.'
+                };
+
+                const fullPrompt = `${prompts[belief]} Interpret the following dream: "${dream}"`;
+
+            
+                        const apiUrl = "https://dream-weaver-five.vercel.app/api/get-llm-response";
+
+            try {
+                // The frontend only sends the simple prompt to the backend
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: fullPrompt })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.statusText} (Status: ${response.status})`);
+                }
+
+                // Get the response from your backend
+                const result = await response.json();
+
+                // Now, process the response that came FROM YOUR BACKEND
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts[0].text) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    setInterpretation(text);
+                } else {
+                    const reason = result.candidates?.[0]?.finishReason || result.error?.message || 'Unknown';
+                    throw new Error(`No interpretation received from the AI. The response may have been blocked. (Reason: ${reason})`);
+                }
+
+            } catch (err) {
+                console.error("API Call Failed:", err);
+                setError(`Failed to fetch interpretation. ${err.message}. Please check your server or try again later.`);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        const handleSubmit = (e) => {
+            e.preventDefault();
+            getInterpretation();
+        };
+            return (
+                <div className="min-h-screen text-white p-4 sm:p-6 lg:p-8">
+                    <div className="max-w-2xl mx-auto">
+                        <Header />
+                        <main className="mt-8">
+                            <Form 
+                                dream={dream}
+                                setDream={setDream}
+                                belief={belief}
+                                setBelief={setBelief}
+                                handleSubmit={handleSubmit}
+                                isLoading={isLoading}
+                            />
+                            <ResultDisplay 
+                                error={error}
+                                interpretation={interpretation}
+                            />
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the React app into the #root div
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>

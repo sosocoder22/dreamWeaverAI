@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/get-llm-response",
+      "destination": "/index.js"
+    }
+  ]
+}
