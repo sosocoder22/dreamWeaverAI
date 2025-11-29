@@ -1,14 +1,12 @@
 // This is your serverless function running on Vercel
-const GOOGLE_LLM = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent";
+const GOOGLE_LLM = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 export default async function handler(req, res) {
-  // Check for the correct method
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).end('Method Not Allowed');
   }
 
-  // Get the API key from the secure environment variables
   const apiKey = process.env.api_key;
   if (!apiKey) {
     return res.status(500).json({ error: "API key is not configured" });
@@ -40,8 +38,9 @@ export default async function handler(req, res) {
 
     const data = await llmResponse.json();
     res.status(200).json(data);
-  } catch (error) {
-    console.error("Server Error:", error);
-    res.status(500).json({ error: "Failed to fetch data from LLM" });
+
+  } catch (err) {
+    console.error("Server Error:", err);
+    res.status(500).json({ error: "Internal Server Error", message: err.message });
   }
 }
