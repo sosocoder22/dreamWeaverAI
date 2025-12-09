@@ -123,51 +123,67 @@
     );
 
     const ResultDisplay = ({ error, interpretation }) => {
-        const [expanded, setExpanded] = React.useState(false);
-        const toggleExpanded = () => setExpanded(prev => !prev);
+    const [showFull, setShowFull] = React.useState(false);
 
-        if (!interpretation) return null;
-
-        // Highlight important words
-        const highlighted = interpretation.replace(
-            /(dream|symbol|journey|shadow|karma|fate|destiny|god|self)/gi,
-            (match) => `<span class="text-indigo-400 font-bold">${match}</span>`
-        );
-
-        // Summary (first 300 characters)
-        const summary = highlighted.length > 300 ? highlighted.slice(0, 300) + "..." : highlighted;
-
+    if (error) {
         return (
-            <div className="mt-8 bg-indigo-950/20 border border-indigo-800 p-6 rounded-lg shadow-2xl animate-fade-in">
-                {error && (
-                    <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg animate-fade-in">
-                        <h3 className="font-bold">An Error Occurred</h3>
-                        <p>{error}</p>
-                    </div>
-                )}
-                <h2 className="text-2xl font-bold text-indigo-300 title-font mb-4">The Tapestry of Your Dream</h2>
-                <p
-                    className="text-indigo-200 whitespace-pre-wrap leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: expanded ? highlighted : summary }}
-                ></p>
-
-                {highlighted.length > 300 && (
-                    <button
-                        onClick={toggleExpanded}
-                        className="text-indigo-400 hover:text-indigo-200 mt-2 font-semibold"
-                    >
-                        {expanded ? "Read Less" : "Read More"}
-                    </button>
-                )}
-
-                {/* Disclaimer */}
-                <p className="text-center text-xs text-indigo-400/60 mt-8 px-4">
-                    Disclaimer: This AI-powered interpretation is for entertainment purposes only and is not a substitute for professional psychological advice.
-                </p>
-                <p className="text-center mt-4">Powered by PixelBridge Technologies.</p>
+            <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg animate-fade-in">
+                <h3 className="font-bold">An Error Occurred</h3>
+                <p>{error}</p>
             </div>
         );
-    };
+    }
+
+    if (!interpretation) return null;
+
+    // Extract the "essence" (here we take the last paragraph starting with "In essence,")
+    const essenceIndex = interpretation.indexOf("In essence");
+    const summary = essenceIndex !== -1 ? interpretation.slice(essenceIndex) : interpretation;
+    const details = essenceIndex !== -1 ? interpretation.slice(0, essenceIndex) : "";
+
+    return (
+        <div className="mt-8 bg-indigo-950/20 border border-indigo-800 p-6 rounded-lg shadow-2xl animate-fade-in">
+            <h2 className="text-2xl font-bold text-indigo-300 title-font mb-4">The Tapestry of Your Dream</h2>
+
+            {/* Summary / Essence first */}
+            <div className="text-indigo-200 whitespace-pre-wrap leading-relaxed mb-4">
+                {summary.split("\n").map((line, i) => (
+                    <p key={i} className={line.includes("**") ? "text-indigo-400 font-semibold" : ""}>
+                        {line.replace(/\*\*/g, "")}
+                    </p>
+                ))}
+            </div>
+
+            {/* Dive Deep toggle */}
+            {details && (
+                <>
+                    {showFull && (
+                        <div className="text-indigo-200 whitespace-pre-wrap leading-relaxed mb-4 border-t border-indigo-700 pt-4">
+                            {details.split("\n").map((line, i) => (
+                                <p key={i} className={line.includes("**") ? "text-indigo-300 font-semibold" : ""}>
+                                    {line.replace(/\*\*/g, "")}
+                                </p>
+                            ))}
+                        </div>
+                    )}
+                    <button
+                        onClick={() => setShowFull(!showFull)}
+                        className="mt-2 text-indigo-400 font-semibold hover:text-indigo-300"
+                    >
+                        {showFull ? "Read Less" : "Dive Deep"}
+                    </button>
+                </>
+            )}
+
+            {/* Disclaimer */}
+            <p className="text-center text-xs text-indigo-400/60 mt-8 px-4">
+                Disclaimer: This AI-powered interpretation is for entertainment purposes only and is not a substitute for professional psychological advice.
+            </p>
+            <p className="text-center mt-4">Powered by PixelBridge Technologies.</p>
+        </div>
+    );
+};
+
 
     const App = () => {
         const [dream, setDream] = React.useState('');
