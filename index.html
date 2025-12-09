@@ -68,7 +68,12 @@ const Form = ({ dream, setDream, belief, setBelief, handleSubmit, isLoading }) =
                 {isLoading ? <><div className="loader w-5 h-5 rounded-full mr-3"></div>Interpreting...</> : 'Interpret My Dream'}
             </button>
         </div>
+         <p className="text-center text-xs text-indigo-400/60 mt-8 px-4">
+                Disclaimer: This AI-powered interpretation is for entertainment purposes only and is not a substitute for professional psychological advice.
+            </p>
+            <p className="text-center mt-4">Powered by PixelBridge Technologies.</p>
     </form>
+    
 );
 
 const ResultDisplay = ({ error, interpretation }) => {
